@@ -1,2 +1,2 @@
-# pomodoro
-Pomodoro PWA using React
+# Pomodoro
+A pomodoro pwa using React.
