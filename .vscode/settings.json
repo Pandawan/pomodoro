@@ -1,10 +1,12 @@
 {
-	"editor.detectIndentation": false,
-	"editor.tabSize": 2,
-	"editor.formatOnSave": true,
-	"eslint.autoFixOnSave": true,
-	"files.associations": {
-		"*.js": "javascriptreact",
-		"*.jsx": "javascriptreact"
-	}
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "eslint.autoFixOnSave": true,
+  "eslint.packageManager": "yarn",
+  "files.eol": "\n",
+  "files.associations": {
+    "*.js": "javascriptreact",
+    "*.jsx": "javascriptreact"
+  }
 }
