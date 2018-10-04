@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 import { css, StyleSheet } from 'aphrodite';
 import Moment from 'moment';
 
+import CircularProgressbar from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
+
 import Button from 'Components/Button';
 
 const styles = StyleSheet.create({
@@ -138,10 +141,14 @@ class Timer extends Component {
   }
 
   render() {
-    const { running, currentTime } = this.state;
+    const { running, currentTime, maxTime } = this.state;
     return (
       <div id="Timer" className={css(styles.Timer)}>
         <div className={css(styles.Content)}>
+          <CircularProgressbar
+            precentage={(currentTime / maxTime) * 100 || 0}
+            text={currentTime || '0'}
+          />
           <p>
             Running: {running.toString()} | Timer: {currentTime}
           </p>
