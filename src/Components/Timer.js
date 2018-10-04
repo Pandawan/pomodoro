@@ -36,6 +36,33 @@ class Timer extends Component {
     this.reset = this.reset.bind(this);
     this.restart = this.restart.bind(this);
     this.toggle = this.toggle.bind(this);
+    this.getPercentage = this.getPercentage.bind(this);
+    this.getFormattedValue = this.getFormattedValue.bind(this);
+  }
+
+  /**
+   * Get a percentage value of the timer.
+   */
+  getPercentage() {
+    const { currentTime, maxTime } = this.state;
+    const exactPercentage = (currentTime / maxTime) * 100 || 0;
+    return exactPercentage;
+  }
+
+  /**
+   * Get a formatted value in HH:mm:ss or mm:ss of the current time
+   */
+  getFormattedValue() {
+    const { currentTime, maxTime } = this.state;
+    // Convert seconds to milliseconds as Moment Object
+    const time = Moment.utc(currentTime * 1000);
+    // If it's longer than 1 hour
+    if (maxTime > 60 * 60) {
+      // Format to HH:mm:ss
+      return time.format('HH:mm:ss');
+    }
+    // Format to mm:ss
+    return time.format('mm:ss');
   }
 
   /**
@@ -141,13 +168,13 @@ class Timer extends Component {
   }
 
   render() {
-    const { running, currentTime, maxTime } = this.state;
+    const { running, currentTime } = this.state;
     return (
       <div id="Timer" className={css(styles.Timer)}>
         <div className={css(styles.Content)}>
           <CircularProgressbar
-            precentage={(currentTime / maxTime) * 100 || 0}
-            text={currentTime || '0'}
+            percentage={this.getPercentage()}
+            text={this.getFormattedValue()}
           />
           <p>
             Running: {running.toString()} | Timer: {currentTime}
@@ -169,8 +196,8 @@ Timer.propTypes = {
 
 Timer.defaultProps = {
   maxTime: {
-    amount: 5,
-    unit: 'seconds',
+    amount: 1,
+    unit: 'minutes',
   },
 };
 
