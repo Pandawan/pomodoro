@@ -19,14 +19,33 @@ const styles = StyleSheet.create({
   },
 });
 
+const progressStyles = {
+  path: {
+    stroke: '#FF4136',
+  },
+  text: {
+    fill: '#FF4136',
+  },
+  trail: {
+    stroke: '#f1f1f1',
+  },
+};
+
 class Timer extends Component {
   constructor(props) {
     super(props);
 
-    const { maxTime } = this.props;
+    // Convert the startTime into seconds
+    const { startTime } = this.props;
+    const startTimeAsSeconds = Moment.duration(
+      startTime.amount,
+      startTime.unit
+    ).asSeconds();
+
+    // Assign state startTime, currentTime, and running values
     this.state = {
-      maxTime: Moment.duration(maxTime.amount, maxTime.unit).asSeconds(),
-      currentTime: 0,
+      startTime: startTimeAsSeconds,
+      currentTime: startTimeAsSeconds,
       running: false,
     };
 
@@ -36,16 +55,16 @@ class Timer extends Component {
     this.reset = this.reset.bind(this);
     this.restart = this.restart.bind(this);
     this.toggle = this.toggle.bind(this);
-    this.getPercentage = this.getPercentage.bind(this);
+    this.getPercentageValue = this.getPercentageValue.bind(this);
     this.getFormattedValue = this.getFormattedValue.bind(this);
   }
 
   /**
    * Get a percentage value of the timer.
    */
-  getPercentage() {
-    const { currentTime, maxTime } = this.state;
-    const exactPercentage = (currentTime / maxTime) * 100 || 0;
+  getPercentageValue() {
+    const { currentTime, startTime } = this.state;
+    const exactPercentage = (currentTime / startTime) * 100 || 0;
     return exactPercentage;
   }
 
@@ -53,11 +72,11 @@ class Timer extends Component {
    * Get a formatted value in HH:mm:ss or mm:ss of the current time
    */
   getFormattedValue() {
-    const { currentTime, maxTime } = this.state;
+    const { currentTime, startTime } = this.state;
     // Convert seconds to milliseconds as Moment Object
     const time = Moment.utc(currentTime * 1000);
     // If it's longer than 1 hour
-    if (maxTime > 60 * 60) {
+    if (startTime > 60 * 60) {
       // Format to HH:mm:ss
       return time.format('HH:mm:ss');
     }
@@ -70,11 +89,11 @@ class Timer extends Component {
    * Used to update the time.
    */
   intervalFunction() {
-    const { running, currentTime, maxTime } = this.state;
+    const { running, currentTime, startTime } = this.state;
 
-    // Make sure that the timer is running AND that it hasn't already exceeded the maxTime
-    if (running && currentTime < maxTime) {
-      const newTime = currentTime + 1;
+    // Make sure that the timer is running AND that it hasn't already passed 0
+    if (running && currentTime > 0) {
+      const newTime = currentTime - 1;
 
       // Add 1 to the current time
       this.setState({
@@ -82,13 +101,11 @@ class Timer extends Component {
       });
 
       // If it has reached maxTime, stop it
-      if (newTime >= maxTime) {
+      if (newTime >= startTime) {
         this.stop();
       }
     } else {
-      this.setState({
-        running: false,
-      });
+      this.stop();
     }
   }
 
@@ -134,14 +151,14 @@ class Timer extends Component {
    * Stop the timer AND reset the time
    */
   reset() {
-    const { running } = this.state;
+    const { running, startTime } = this.state;
     // Stop the timer if not already
     if (running) {
       this.stop();
     }
     // Reset time to 0
     this.setState({
-      currentTime: 0,
+      currentTime: startTime,
     });
   }
 
@@ -173,8 +190,9 @@ class Timer extends Component {
       <div id="Timer" className={css(styles.Timer)}>
         <div className={css(styles.Content)}>
           <CircularProgressbar
-            percentage={this.getPercentage()}
+            percentage={this.getPercentageValue()}
             text={this.getFormattedValue()}
+            styles={progressStyles}
           />
           <p>
             Running: {running.toString()} | Timer: {currentTime}
@@ -188,14 +206,14 @@ class Timer extends Component {
 }
 
 Timer.propTypes = {
-  maxTime: PropTypes.shape({
+  startTime: PropTypes.shape({
     amount: PropTypes.number,
     unit: PropTypes.string,
   }),
 };
 
 Timer.defaultProps = {
-  maxTime: {
+  startTime: {
     amount: 1,
     unit: 'minutes',
   },
