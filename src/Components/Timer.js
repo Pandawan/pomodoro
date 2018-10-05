@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { css, StyleSheet } from 'aphrodite';
 import Moment from 'moment';
 
-import CircularProgressbar from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
+import { Colors } from 'Config';
 
 import Button from 'Components/Button';
+import ProgressCircle from 'Components/ProgressCircle';
 
 const styles = StyleSheet.create({
   Timer: {
@@ -17,19 +17,12 @@ const styles = StyleSheet.create({
   Content: {
     display: 'grid',
   },
+  CircleText: {
+    fontSize: '4em',
+    color: Colors.primary,
+    margin: 0,
+  },
 });
-
-const progressStyles = {
-  path: {
-    stroke: '#FF4136',
-  },
-  text: {
-    fill: '#FF4136',
-  },
-  trail: {
-    stroke: '#f1f1f1',
-  },
-};
 
 class Timer extends Component {
   constructor(props) {
@@ -186,14 +179,13 @@ class Timer extends Component {
 
   render() {
     const { running, currentTime } = this.state;
+
     return (
       <div id="Timer" className={css(styles.Timer)}>
         <div className={css(styles.Content)}>
-          <CircularProgressbar
-            percentage={this.getPercentageValue()}
-            text={this.getFormattedValue()}
-            styles={progressStyles}
-          />
+          <ProgressCircle percentage={this.getPercentageValue()}>
+            <p className={css(styles.CircleText)}>{this.getFormattedValue()}</p>
+          </ProgressCircle>
           <p>
             Running: {running.toString()} | Timer: {currentTime}
           </p>
