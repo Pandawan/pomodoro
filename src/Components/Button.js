@@ -3,21 +3,30 @@ import PropTypes from 'prop-types';
 
 class Button extends Component {
   render() {
-    const { label, onClick } = this.props;
+    const { className, children, title, onClick } = this.props;
     return (
-      <button type="button" onClick={onClick}>
-        {label}
+      <button
+        className={className}
+        type="button"
+        title={title}
+        onClick={onClick}
+      >
+        {children}
       </button>
     );
   }
 }
 
 Button.propTypes = {
-  label: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  children: PropTypes.oneOfType([PropTypes.string, PropTypes.node]).isRequired,
+  title: PropTypes.string,
   onClick: PropTypes.func,
 };
 
 Button.defaultProps = {
+  className: '',
+  title: '',
   onClick: () => {},
 };
 

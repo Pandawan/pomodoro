@@ -5,8 +5,8 @@ import Moment from 'moment';
 
 import { Colors } from 'Config';
 
-import Button from 'Components/Button';
 import ProgressCircle from 'Components/ProgressCircle';
+import TimerControls from 'Components/TimerControls';
 
 const styles = StyleSheet.create({
   Timer: {
@@ -178,7 +178,7 @@ class Timer extends Component {
   }
 
   render() {
-    const { running, currentTime } = this.state;
+    const { running } = this.state;
 
     return (
       <div id="Timer" className={css(styles.Timer)}>
@@ -186,11 +186,12 @@ class Timer extends Component {
           <ProgressCircle percentage={this.getPercentageValue()}>
             <p className={css(styles.CircleText)}>{this.getFormattedValue()}</p>
           </ProgressCircle>
-          <p>
-            Running: {running.toString()} | Timer: {currentTime}
-          </p>
-          <Button label="Toggle" onClick={this.toggle} />
-          <Button label="Reset" onClick={this.reset} />
+          <TimerControls
+            isRunning={running}
+            onClickStart={this.start}
+            onClickPause={this.stop}
+            onClickReset={this.reset}
+          />
         </div>
       </div>
     );
