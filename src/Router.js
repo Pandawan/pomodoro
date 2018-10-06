@@ -7,9 +7,9 @@ import Pomodoro from 'Scenes/Pomodoro';
 class Router extends Component {
   render() {
     return (
-      <BrowserRouter>
+      <BrowserRouter basename={process.env.PUBLIC_URL}>
         <App>
-          <Route exact path="/" component={Pomodoro} />
+          <Route path="/" component={Pomodoro} />
         </App>
       </BrowserRouter>
     );
