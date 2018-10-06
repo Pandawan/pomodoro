@@ -14,6 +14,8 @@ const styles = StyleSheet.create({
     display: 'grid',
     placeItems: 'center',
     height: '100vh',
+    width: '80%',
+    margin: '0 auto',
   },
   Content: {
     display: 'grid',
@@ -80,6 +82,10 @@ class Timer extends Component {
       inputValue: Timer.getFormattedValueForTime(startTimeAsSeconds),
     };
 
+    // Create a reference to the input field
+    this.inputFieldRef = React.createRef();
+
+    // Probably want to switch to () => {} functions instead...
     this.intervalFunction = this.intervalFunction.bind(this);
     this.start = this.start.bind(this);
     this.stop = this.stop.bind(this);
@@ -89,6 +95,7 @@ class Timer extends Component {
     this.getPercentageValue = this.getPercentageValue.bind(this);
     this.handleUpdateStartValue = this.handleUpdateStartValue.bind(this);
     this.handleChangeInputValue = this.handleChangeInputValue.bind(this);
+    this.handleFormSubmit = this.handleFormSubmit.bind(this);
   }
 
   /**
@@ -110,7 +117,6 @@ class Timer extends Component {
     // Make sure that the timer is running AND that it hasn't already passed 0
     if (running && currentTime > 0) {
       const newTime = currentTime - 1;
-
       // Add 1 to the current time
       this.setState({
         currentTime: newTime,
@@ -135,7 +141,6 @@ class Timer extends Component {
     if (!running) {
       // Start an interval every second
       this.interval = setInterval(this.intervalFunction, 1000);
-
       // Update the state
       this.setState({
         running: true,
@@ -154,7 +159,6 @@ class Timer extends Component {
     if (running) {
       // Stop & clear the interval
       clearInterval(this.interval);
-
       // Update the state
       this.setState({
         running: false,
@@ -169,6 +173,7 @@ class Timer extends Component {
    */
   reset() {
     const { running, startTime } = this.state;
+    const formattedTime = Timer.getFormattedValueForTime(startTime);
     // Stop the timer if not already
     if (running) {
       this.stop();
@@ -176,7 +181,7 @@ class Timer extends Component {
     // Reset time to 0
     this.setState({
       currentTime: startTime,
-      inputValue: Timer.getFormattedValueForTime(startTime),
+      inputValue: formattedTime,
     });
   }
 
@@ -229,7 +234,6 @@ class Timer extends Component {
     const newTime = isMinutesFormat
       ? Moment.duration(`00:${value}`).asSeconds()
       : Moment.duration(value).asSeconds();
-
     // Update the time
     this.setState({
       currentTime: newTime,
@@ -249,8 +253,22 @@ class Timer extends Component {
     });
   }
 
+  /**
+   * Called when the form is submitted (Press Enter or Done or something)
+   * Call handleUpdateStartValue
+   * @param {Event} e The event object for the form submit
+   */
+  handleFormSubmit(e) {
+    e.preventDefault();
+    this.handleUpdateStartValue(this.inputFieldRef.current.value);
+  }
+
   render() {
     const { running, inputValue, currentTime } = this.state;
+
+    // Update the title
+    const formattedTime = Timer.getFormattedValueForTime(currentTime);
+    document.title = `(${formattedTime}) Pomodoro`;
 
     return (
       <div id="Timer" className={css(styles.Timer)}>
@@ -258,16 +276,17 @@ class Timer extends Component {
           <h1 className={css(styles.Title)}>{Config.name}</h1>
           <ProgressCircle percentage={this.getPercentageValue()}>
             {running ? (
-              <p className={css(styles.CircleText)}>
-                {Timer.getFormattedValueForTime(currentTime)}
-              </p>
+              <p className={css(styles.CircleText)}>{formattedTime}</p>
             ) : (
-              <InputField
-                className={css(styles.CircleText, styles.CircleInput)}
-                value={inputValue}
-                onBlur={this.handleUpdateStartValue}
-                onChange={this.handleChangeInputValue}
-              />
+              <form onSubmit={this.handleFormSubmit}>
+                <InputField
+                  inputRef={this.inputFieldRef}
+                  className={css(styles.CircleText, styles.CircleInput)}
+                  value={inputValue}
+                  onBlur={this.handleUpdateStartValue}
+                  onChange={this.handleChangeInputValue}
+                />
+              </form>
             )}
           </ProgressCircle>
           <TimerControls
