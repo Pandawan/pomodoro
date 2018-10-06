@@ -5,6 +5,7 @@ import Moment from 'moment';
 
 import { Colors } from 'Config';
 
+import InputField from 'Components/InputField';
 import ProgressCircle from 'Components/ProgressCircle';
 import TimerControls from 'Components/TimerControls';
 
@@ -22,9 +23,31 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     margin: 0,
   },
+  CircleInput: {
+    fontWeight: 'inherit',
+    fontFamily: 'inherit',
+    background: 'none',
+    textAlign: 'center',
+    width: '100%',
+    padding: 0,
+    margin: 0,
+    border: 0,
+  },
 });
 
 class Timer extends Component {
+  static getFormattedValueForTime(currentTime) {
+    // Convert seconds to milliseconds as Moment Object
+    const time = Moment.utc(currentTime * 1000);
+    // If it's longer than 1 hour
+    if (currentTime >= 60 * 60) {
+      // Format to HH:mm:ss
+      return time.format('H:mm:ss');
+    }
+    // Format to mm:ss
+    return time.format('m:ss');
+  }
+
   constructor(props) {
     super(props);
 
@@ -40,6 +63,7 @@ class Timer extends Component {
       startTime: startTimeAsSeconds,
       currentTime: startTimeAsSeconds,
       running: false,
+      inputValue: Timer.getFormattedValueForTime(startTimeAsSeconds),
     };
 
     this.intervalFunction = this.intervalFunction.bind(this);
@@ -49,7 +73,8 @@ class Timer extends Component {
     this.restart = this.restart.bind(this);
     this.toggle = this.toggle.bind(this);
     this.getPercentageValue = this.getPercentageValue.bind(this);
-    this.getFormattedValue = this.getFormattedValue.bind(this);
+    this.handleUpdateStartValue = this.handleUpdateStartValue.bind(this);
+    this.handleChangeInputValue = this.handleChangeInputValue.bind(this);
   }
 
   /**
@@ -59,22 +84,6 @@ class Timer extends Component {
     const { currentTime, startTime } = this.state;
     const exactPercentage = (currentTime / startTime) * 100 || 0;
     return exactPercentage;
-  }
-
-  /**
-   * Get a formatted value in HH:mm:ss or mm:ss of the current time
-   */
-  getFormattedValue() {
-    const { currentTime, startTime } = this.state;
-    // Convert seconds to milliseconds as Moment Object
-    const time = Moment.utc(currentTime * 1000);
-    // If it's longer than 1 hour
-    if (startTime > 60 * 60) {
-      // Format to HH:mm:ss
-      return time.format('HH:mm:ss');
-    }
-    // Format to mm:ss
-    return time.format('mm:ss');
   }
 
   /**
@@ -91,6 +100,7 @@ class Timer extends Component {
       // Add 1 to the current time
       this.setState({
         currentTime: newTime,
+        inputValue: Timer.getFormattedValueForTime(newTime),
       });
 
       // If it has reached maxTime, stop it
@@ -152,6 +162,7 @@ class Timer extends Component {
     // Reset time to 0
     this.setState({
       currentTime: startTime,
+      inputValue: Timer.getFormattedValueForTime(startTime),
     });
   }
 
@@ -177,14 +188,66 @@ class Timer extends Component {
     }
   }
 
-  render() {
+  /**
+   * Called when the focus on the input field is lost.
+   * Confirm the value and update the start/current times.
+   */
+  handleUpdateStartValue(value) {
+    // Stop it if currently running (shouldn't happen, just in case)
     const { running } = this.state;
+    if (running) {
+      this.stop();
+    }
+
+    // Whether or not the given input is in mm:ss format
+    const isMinutesFormat = Moment(value, 'm:ss', true).isValid();
+    // If it's not in mm:ss format AND it's not a valid duration, don't allow it!
+    if (!isMinutesFormat && !Moment.isDuration(Moment.duration(value))) {
+      this.setState(previousState => ({
+        currentTime: previousState.currentTime,
+        startTime: previousState.startTime,
+        inputValue: Timer.getFormattedValueForTime(previousState.currentTime),
+      }));
+      return;
+    }
+    // Change the time to the new one
+    const newTime = isMinutesFormat
+      ? Moment.duration(`00:${value}`).asSeconds()
+      : Moment.duration(value).asSeconds();
+
+    // Update the time
+    this.setState({
+      currentTime: newTime,
+      startTime: newTime,
+      inputValue: Timer.getFormattedValueForTime(newTime),
+    });
+  }
+
+  handleChangeInputValue(value) {
+    this.setState({
+      inputValue: value,
+    });
+  }
+
+  render() {
+    const { running, inputValue, currentTime } = this.state;
 
     return (
       <div id="Timer" className={css(styles.Timer)}>
         <div className={css(styles.Content)}>
           <ProgressCircle percentage={this.getPercentageValue()}>
-            <p className={css(styles.CircleText)}>{this.getFormattedValue()}</p>
+            {running ? (
+              <p className={css(styles.CircleText)}>
+                {Timer.getFormattedValueForTime(currentTime)}
+              </p>
+            ) : (
+              <InputField
+                className={css(styles.CircleText, styles.CircleInput)}
+                value={inputValue}
+                onBlur={this.handleUpdateStartValue}
+                onChange={this.handleChangeInputValue}
+              />
+            )}
           </ProgressCircle>
           <TimerControls
             isRunning={running}
@@ -207,7 +270,7 @@ Timer.propTypes = {
 
 Timer.defaultProps = {
   startTime: {
-    amount: 1,
+    amount: 25,
     unit: 'minutes',
   },
 };
