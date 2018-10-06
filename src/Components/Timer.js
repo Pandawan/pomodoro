@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { css, StyleSheet } from 'aphrodite';
 import Moment from 'moment';
 
-import { Colors } from 'Config';
+import Config, { Colors } from 'Config';
 
 import InputField from 'Components/InputField';
 import ProgressCircle from 'Components/ProgressCircle';
@@ -17,6 +17,14 @@ const styles = StyleSheet.create({
   },
   Content: {
     display: 'grid',
+  },
+  Title: {
+    fontWeight: '500',
+    fontSize: '3em',
+    marginTop: 0,
+    marginBottom: '0.1em',
+    color: Colors.primary,
+    textAlign: 'center',
   },
   CircleText: {
     fontSize: '4em',
@@ -32,10 +40,16 @@ const styles = StyleSheet.create({
     padding: 0,
     margin: 0,
     border: 0,
+    ':focus': {
+      color: Colors.primaryDarker,
+    },
   },
 });
 
 class Timer extends Component {
+  /**
+   * Formats the given time (in milliseconds) to a H:mm:ss or m:ss time format
+   */
   static getFormattedValueForTime(currentTime) {
     // Convert seconds to milliseconds as Moment Object
     const time = Moment.utc(currentTime * 1000);
@@ -191,6 +205,7 @@ class Timer extends Component {
   /**
    * Called when the focus on the input field is lost.
    * Confirm the value and update the start/current times.
+   * @param {string} value The InputField's value
    */
   handleUpdateStartValue(value) {
     // Stop it if currently running (shouldn't happen, just in case)
@@ -223,6 +238,11 @@ class Timer extends Component {
     });
   }
 
+  /**
+   * Called when the value of the input field changes.
+   * Update the state to reflect those changes.
+   * @param {string} value The InputField's Value
+   */
   handleChangeInputValue(value) {
     this.setState({
       inputValue: value,
@@ -235,6 +255,7 @@ class Timer extends Component {
     return (
       <div id="Timer" className={css(styles.Timer)}>
         <div className={css(styles.Content)}>
+          <h1 className={css(styles.Title)}>{Config.name}</h1>
           <ProgressCircle percentage={this.getPercentageValue()}>
             {running ? (
               <p className={css(styles.CircleText)}>

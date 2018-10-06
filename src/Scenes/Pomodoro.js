@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+
 import Timer from 'Components/Timer';
 
 class Pomodoro extends Component {
